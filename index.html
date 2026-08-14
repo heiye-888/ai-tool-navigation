@@ -8,65 +8,12 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <section class="auth-view" id="authView" aria-label="登录">
-    <div class="auth-card">
-      <div class="auth-brand">
-        <span class="brand-mark auth-brand-mark"><i data-lucide="sparkles"></i></span>
-        <span class="auth-title">AI 工具导航</span>
-      </div>
-      <p class="auth-subtitle">登录后开始使用工具导航</p>
-      <div class="auth-tabs" role="tablist">
-        <button class="auth-tab active" type="button" data-auth-tab="login" role="tab" aria-selected="true">登录</button>
-        <button class="auth-tab" type="button" data-auth-tab="register" role="tab" aria-selected="false">注册</button>
-      </div>
-      <form id="loginForm" class="auth-form" novalidate>
-        <label class="auth-field">
-          <span>账号</span>
-          <span class="auth-input-wrap"><i data-lucide="user"></i><input id="loginUsername" type="text" autocomplete="username" placeholder="请输入用户名"></span>
-        </label>
-        <label class="auth-field">
-          <span>密码</span>
-          <span class="auth-input-wrap"><i data-lucide="lock"></i><input id="loginPassword" type="password" autocomplete="current-password" placeholder="请输入密码"></span>
-        </label>
-        <p class="auth-error" id="loginError" hidden></p>
-        <button class="auth-submit" type="submit">登录</button>
-      </form>
-      <form id="registerForm" class="auth-form" novalidate hidden>
-        <label class="auth-field">
-          <span>账号</span>
-          <span class="auth-input-wrap"><i data-lucide="user"></i><input id="registerUsername" type="text" autocomplete="username" maxlength="20" placeholder="4-20位，英文开头"></span>
-        </label>
-        <label class="auth-field">
-          <span>密码</span>
-          <span class="auth-input-wrap"><i data-lucide="lock"></i><input id="registerPassword" type="password" autocomplete="new-password" maxlength="32" placeholder="8-32位，至少两种格式"></span>
-        </label>
-        <label class="auth-field">
-          <span>确认密码</span>
-          <span class="auth-input-wrap"><i data-lucide="shield-check"></i><input id="registerConfirm" type="password" autocomplete="new-password" maxlength="32" placeholder="再次输入密码"></span>
-        </label>
-        <p class="auth-error" id="registerError" hidden></p>
-        <button class="auth-submit" type="submit">注册并登录</button>
-      </form>
-    </div>
-  </section>
-
-  <div id="appView" hidden>
     <header class="topbar">
       <a class="brand" href="#" aria-label="AI 工具导航首页">
         <span class="brand-mark"><i data-lucide="sparkles"></i></span>
         <span class="brand-text">AI 工具导航</span>
       </a>
       <div class="topbar-actions">
-        <span class="user-chip" id="userChip">
-          <span class="user-avatar" id="userAvatar">A</span>
-          <span class="user-name" id="userName">用户</span>
-        </span>
-        <a id="adminLink" class="icon-btn" href="/admin.html" aria-label="后台管理" title="后台管理" hidden>
-          <i data-lucide="settings"></i>
-        </a>
-        <button id="logoutBtn" class="icon-btn" type="button" aria-label="退出登录" title="退出登录">
-          <i data-lucide="log-out"></i>
-        </button>
         <button id="favoriteBtn" class="icon-btn" type="button" aria-label="查看我的收藏" title="我的收藏">
           <i data-lucide="heart"></i>
           <span class="count-badge" id="favCount" hidden>0</span>
@@ -201,7 +148,6 @@
   <button class="back-to-top" id="backToTop" type="button" aria-label="回到顶部" title="回到顶部" hidden>
     <i data-lucide="arrow-up"></i>
   </button>
-  </div>
 
   <script src="lucide.min.js"></script>
   <script src="data.js"></script>
