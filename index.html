@@ -34,15 +34,15 @@
       <form id="registerForm" class="auth-form" novalidate hidden>
         <label class="auth-field">
           <span>账号</span>
-          <span class="auth-input-wrap"><i data-lucide="user"></i><input id="registerUsername" type="text" autocomplete="username" placeholder="设置用户名"></span>
+          <span class="auth-input-wrap"><i data-lucide="user"></i><input id="registerUsername" type="text" autocomplete="username" maxlength="20" placeholder="4-20位，英文开头"></span>
         </label>
         <label class="auth-field">
           <span>密码</span>
-          <span class="auth-input-wrap"><i data-lucide="lock"></i><input id="registerPassword" type="password" autocomplete="new-password" placeholder="至少 6 位"></span>
+          <span class="auth-input-wrap"><i data-lucide="lock"></i><input id="registerPassword" type="password" autocomplete="new-password" maxlength="32" placeholder="8-32位，至少两种格式"></span>
         </label>
         <label class="auth-field">
           <span>确认密码</span>
-          <span class="auth-input-wrap"><i data-lucide="shield-check"></i><input id="registerConfirm" type="password" autocomplete="new-password" placeholder="再次输入密码"></span>
+          <span class="auth-input-wrap"><i data-lucide="shield-check"></i><input id="registerConfirm" type="password" autocomplete="new-password" maxlength="32" placeholder="再次输入密码"></span>
         </label>
         <p class="auth-error" id="registerError" hidden></p>
         <button class="auth-submit" type="submit">注册并登录</button>
@@ -61,6 +61,9 @@
           <span class="user-avatar" id="userAvatar">A</span>
           <span class="user-name" id="userName">用户</span>
         </span>
+        <a id="adminLink" class="icon-btn" href="/admin.html" aria-label="后台管理" title="后台管理" hidden>
+          <i data-lucide="settings"></i>
+        </a>
         <button id="logoutBtn" class="icon-btn" type="button" aria-label="退出登录" title="退出登录">
           <i data-lucide="log-out"></i>
         </button>
