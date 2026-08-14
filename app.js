@@ -66,6 +66,17 @@
     }
   }
 
+  function scheduleAvatarFallback() {
+    clearTimeout(scheduleAvatarFallback.timer);
+    scheduleAvatarFallback.timer = setTimeout(function () {
+      document.querySelectorAll('.avatar-img').forEach(function (img) {
+        if (!img.complete || img.naturalWidth === 0) {
+          img.remove();
+        }
+      });
+    }, 2000);
+  }
+
   function loadFavorites() {
     try {
       return JSON.parse(localStorage.getItem(STORAGE_KEYS.favorites) || '[]');
@@ -101,6 +112,32 @@
   function initialOf(tool) {
     const letter = String(tool.name).trim().charAt(0);
     return letter.toUpperCase();
+  }
+
+  function logoHost(tool) {
+    try {
+      return new URL(tool.url).hostname;
+    } catch (error) {
+      return '';
+    }
+  }
+
+  function avatarLogoHtml(tool, className) {
+    const host = logoHost(tool);
+    const color = escapeHtml(tool.color);
+    const initial = escapeHtml(initialOf(tool));
+    const fallback = '<span class="avatar-fallback" style="background:' + color + '">' + initial + '</span>';
+    if (!host) {
+      return '<span class="' + className + ' avatar-logo" style="--avatar-color:' + color + '">' + fallback + '</span>';
+    }
+    const primary = 'https://' + host + '/favicon.ico';
+    const secondary = 'https://icons.duckduckgo.com/ip3/' + host + '.ico';
+    return (
+      '<span class="' + className + ' avatar-logo" style="--avatar-color:' + color + '">' +
+        fallback +
+        '<img class="avatar-img" src="' + primary + '" alt="" loading="lazy" onerror="var im=this; if(!im.dataset.fb){im.dataset.fb=1; im.src=\'' + secondary + '\';} else { im.remove(); }">' +
+      '</span>'
+    );
   }
 
   function matchesTool(tool) {
@@ -206,7 +243,7 @@
     return (
       '<article class="tool-card" data-tool-id="' + tool.id + '" style="--card-color:' + escapeHtml(cat.color) + ';--card-index:' + Math.min(index, 14) + '">' +
         '<div class="card-top">' +
-          '<span class="avatar" style="background:' + escapeHtml(tool.color) + ';--avatar-color:' + escapeHtml(tool.color) + '">' + escapeHtml(initialOf(tool)) + '</span>' +
+          avatarLogoHtml(tool, 'avatar') +
           '<div class="card-title-wrap">' +
             '<h3 class="card-title"><span class="card-title-name">' + escapeHtml(tool.name) + '</span></h3>' +
             '<div class="card-category">' + escapeHtml(cat.label) + ' · ' + escapeHtml(tool.price) + '</div>' +
@@ -233,7 +270,7 @@
     const cat = categoryOf(tool);
     return (
       '<button class="hot-card" type="button" data-open-tool="' + tool.id + '" style="--hot-color:' + escapeHtml(tool.color) + '">' +
-        '<span class="hot-avatar" style="background:' + escapeHtml(tool.color) + '">' + escapeHtml(initialOf(tool)) + '</span>' +
+        avatarLogoHtml(tool, 'hot-avatar') +
         '<span class="hot-info">' +
           '<strong>' + escapeHtml(tool.name) + '</strong>' +
           '<span>' + escapeHtml(cat.label) + ' · ' + ratingStars(tool.rating) + ' 分</span>' +
@@ -269,6 +306,7 @@
     const hotTools = sortedTools(TOOLS.filter(function (tool) { return tool.hot; })).slice(0, 10);
     els.hotTrack.innerHTML = hotTools.map(hotCardHtml).join('');
     refreshIcons();
+    scheduleAvatarFallback();
     startHotAuto();
   }
 
@@ -334,6 +372,7 @@
     els.resultCount.textContent = '共 ' + list.length + ' 款工具';
     els.catalogTitle.textContent = catalogTitleText();
     refreshIcons();
+    scheduleAvatarFallback();
   }
 
   function catalogTitleText() {
@@ -421,7 +460,7 @@
     const related = relatedTools(tool).map(function (item) {
       return (
         '<a class="related-item" href="' + escapeHtml(item.url) + '" target="_blank" rel="noopener noreferrer">' +
-          '<span class="hot-avatar" style="background:' + escapeHtml(item.color) + '">' + escapeHtml(initialOf(item)) + '</span>' +
+          avatarLogoHtml(item, 'hot-avatar') +
           '<span>' + escapeHtml(item.name) + '</span>' +
         '</a>'
       );
@@ -429,7 +468,7 @@
 
     return (
       '<div class="modal-head">' +
-        '<span class="avatar" style="background:' + escapeHtml(tool.color) + '">' + escapeHtml(initialOf(tool)) + '</span>' +
+        avatarLogoHtml(tool, 'avatar') +
         '<div>' +
           '<h2 id="modalName">' + escapeHtml(tool.name) + '</h2>' +
           '<div class="sub">' + escapeHtml(cat.label) + ' · ' + escapeHtml(tool.price) + '</div>' +
@@ -473,6 +512,7 @@
     els.modalBackdrop.hidden = false;
     document.body.style.overflow = 'hidden';
     refreshIcons();
+    scheduleAvatarFallback();
   }
 
   function closeModal() {
