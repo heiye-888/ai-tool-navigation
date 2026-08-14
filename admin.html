@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>后台管理 · AI 工具导航</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="admin-body">
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="返回网站">
+      <span class="brand-mark"><i data-lucide="sparkles"></i></span>
+      <span class="brand-text">AI 工具导航 · 后台</span>
+    </a>
+    <div class="topbar-actions">
+      <a class="icon-btn" href="/" aria-label="返回网站" title="返回网站">
+        <i data-lucide="arrow-left"></i>
+      </a>
+      <button id="adminLogoutBtn" class="icon-btn" type="button" aria-label="退出登录" title="退出登录" hidden>
+        <i data-lucide="log-out"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <section class="auth-view" id="adminLoginView" aria-label="管理员登录">
+      <div class="auth-card">
+        <div class="auth-brand">
+          <span class="brand-mark auth-brand-mark"><i data-lucide="shield-check"></i></span>
+          <span class="auth-title">后台管理</span>
+        </div>
+        <p class="auth-subtitle">仅管理员可以登录查看</p>
+        <form id="adminLoginForm" class="auth-form" novalidate>
+          <label class="auth-field">
+            <span>管理员账号</span>
+            <span class="auth-input-wrap"><i data-lucide="user"></i><input id="adminUsername" type="text" autocomplete="username" placeholder="请输入管理员账号"></span>
+          </label>
+          <label class="auth-field">
+            <span>管理员密码</span>
+            <span class="auth-input-wrap"><i data-lucide="lock"></i><input id="adminPassword" type="password" autocomplete="current-password" placeholder="请输入管理员密码"></span>
+          </label>
+          <p class="auth-error" id="adminLoginError" hidden></p>
+          <button class="auth-submit" type="submit">进入后台</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="admin-dashboard" id="adminDashboard" aria-label="后台数据" hidden>
+      <div class="admin-head">
+        <div>
+          <p class="eyebrow">仅管理员可见</p>
+          <h1>注册用户管理</h1>
+        </div>
+        <button class="text-btn" id="adminRefreshBtn" type="button">
+          <i data-lucide="refresh-cw"></i>
+          刷新
+        </button>
+      </div>
+
+      <div class="admin-stats">
+        <div class="admin-stat">
+          <span class="admin-stat-icon"><i data-lucide="users"></i></span>
+          <div>
+            <span>注册人数</span>
+            <strong id="adminTotalCount">0</strong>
+          </div>
+        </div>
+        <div class="admin-stat">
+          <span class="admin-stat-icon"><i data-lucide="shield-check"></i></span>
+          <div>
+            <span>管理员账号</span>
+            <strong id="adminAccountName">admin</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>序号</th>
+              <th>账号</th>
+              <th>密码</th>
+              <th>注册时间</th>
+              <th>最近登录</th>
+            </tr>
+          </thead>
+          <tbody id="adminTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="adminToast" role="status" aria-live="polite"></div>
+
+  <script src="lucide.min.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
