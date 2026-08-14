@@ -17,6 +17,8 @@
     favorites: new Set(loadFavorites()),
     theme: loadTheme()
   };
+  let serverMode = false;
+  let currentRole = 'user';
 
   const els = {
     authView: document.getElementById('authView'),
@@ -32,6 +34,7 @@
     registerError: document.getElementById('registerError'),
     userAvatar: document.getElementById('userAvatar'),
     userName: document.getElementById('userName'),
+    adminLink: document.getElementById('adminLink'),
     logoutBtn: document.getElementById('logoutBtn'),
     searchInput: document.getElementById('searchInput'),
     clearSearch: document.getElementById('clearSearch'),
@@ -110,6 +113,38 @@
     refreshIcons();
   }
 
+  async function apiRequest(url, options) {
+    const response = await fetch(url, Object.assign({
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' }
+    }, options || {}));
+    let data = {};
+    try {
+      data = await response.json();
+    } catch (error) {
+      data = {};
+    }
+    if (!response.ok) {
+      throw new Error(data.error || '请求失败');
+    }
+    return data;
+  }
+
+  async function detectServerMode() {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(function () { controller.abort(); }, 1800);
+      const response = await fetch('/api/health', {
+        credentials: 'same-origin',
+        signal: controller.signal
+      });
+      clearTimeout(timer);
+      return response.ok;
+    } catch (error) {
+      return false;
+    }
+  }
+
   function loadUsers() {
     try {
       return JSON.parse(localStorage.getItem(STORAGE_KEYS.users) || '[]');
@@ -162,6 +197,40 @@
     });
   }
 
+  function isValidUsername(username) {
+    return /^[A-Za-z][A-Za-z0-9_]{3,19}$/.test(username);
+  }
+
+  function passwordTypeCount(password) {
+    let count = 0;
+    if (/[a-z]/.test(password)) {
+      count += 1;
+    }
+    if (/[A-Z]/.test(password)) {
+      count += 1;
+    }
+    if (/[0-9]/.test(password)) {
+      count += 1;
+    }
+    if (/[^A-Za-z0-9]/.test(password)) {
+      count += 1;
+    }
+    return count;
+  }
+
+  function passwordError(password) {
+    if (/\s/.test(password)) {
+      return '密码不能包含空格';
+    }
+    if (password.length < 8 || password.length > 32) {
+      return '密码长度需为 8-32 位';
+    }
+    if (passwordTypeCount(password) < 2) {
+      return '密码需包含字母、数字、特殊符号中的至少两种';
+    }
+    return '';
+  }
+
   function showAuthError(target, message) {
     target.textContent = message;
     target.hidden = false;
@@ -183,9 +252,11 @@
     hideAuthErrors();
   }
 
-  function enterApp(username) {
+  function enterApp(username, role) {
+    currentRole = role || 'user';
     els.userAvatar.textContent = username.trim().charAt(0).toUpperCase();
     els.userName.textContent = username;
+    els.adminLink.hidden = !(serverMode && currentRole === 'admin');
     els.authView.hidden = true;
     els.appView.hidden = false;
     els.backToTop.hidden = true;
@@ -601,6 +672,18 @@
       showAuthError(els.loginError, '请输入账号和密码');
       return;
     }
+    if (serverMode) {
+      try {
+        const data = await apiRequest('/api/login', {
+          method: 'POST',
+          body: JSON.stringify({ username: username, password: password })
+        });
+        enterApp(data.username, data.role);
+      } catch (error) {
+        showAuthError(els.loginError, error.message);
+      }
+      return;
+    }
     const user = findUser(username);
     if (!user) {
       showAuthError(els.loginError, '账号或密码不正确');
@@ -621,16 +704,29 @@
     const password = els.registerPassword.value;
     const confirm = els.registerConfirm.value;
     hideAuthErrors();
-    if (username.length < 2) {
-      showAuthError(els.registerError, '账号至少需要 2 个字符');
+    if (!isValidUsername(username)) {
+      showAuthError(els.registerError, '账号需以英文开头，由 4-20 位英文、数字或下划线组成');
       return;
     }
-    if (password.length < 6) {
-      showAuthError(els.registerError, '密码至少需要 6 位');
+    const passwordIssue = passwordError(password);
+    if (passwordIssue) {
+      showAuthError(els.registerError, passwordIssue);
       return;
     }
     if (password !== confirm) {
       showAuthError(els.registerError, '两次输入的密码不一致');
+      return;
+    }
+    if (serverMode) {
+      try {
+        const data = await apiRequest('/api/register', {
+          method: 'POST',
+          body: JSON.stringify({ username: username, password: password })
+        });
+        enterApp(data.username, data.role);
+      } catch (error) {
+        showAuthError(els.registerError, error.message);
+      }
       return;
     }
     if (findUser(username)) {
@@ -651,7 +747,14 @@
     enterApp(username);
   });
 
-  els.logoutBtn.addEventListener('click', function () {
+  els.logoutBtn.addEventListener('click', async function () {
+    if (serverMode) {
+      try {
+        await apiRequest('/api/logout', { method: 'POST' });
+      } catch (error) {
+        // 即使退出接口失败，也回到登录页
+      }
+    }
     clearSession();
     els.loginPassword.value = '';
     els.registerUsername.value = '';
@@ -830,10 +933,22 @@
 
   applyTheme(state.theme);
   render();
-  const sessionUser = loadSession();
-  if (sessionUser && findUser(sessionUser)) {
-    enterApp(sessionUser);
-  } else {
-    showAuth();
-  }
+  (async function init() {
+    serverMode = await detectServerMode();
+    if (serverMode) {
+      try {
+        const session = await apiRequest('/api/session');
+        enterApp(session.username, session.role);
+      } catch (error) {
+        showAuth();
+      }
+    } else {
+      const sessionUser = loadSession();
+      if (sessionUser && findUser(sessionUser)) {
+        enterApp(sessionUser);
+      } else {
+        showAuth();
+      }
+    }
+  })();
 })();
