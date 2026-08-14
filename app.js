@@ -4,9 +4,7 @@
   const categoryMap = Object.fromEntries(CATEGORIES.map((cat) => [cat.key, cat]));
   const STORAGE_KEYS = {
     favorites: 'ai-nav-favorites',
-    theme: 'ai-nav-theme',
-    users: 'ai-nav-users',
-    session: 'ai-nav-session'
+    theme: 'ai-nav-theme'
   };
 
   const state = {
@@ -17,25 +15,8 @@
     favorites: new Set(loadFavorites()),
     theme: loadTheme()
   };
-  let serverMode = false;
-  let currentRole = 'user';
 
   const els = {
-    authView: document.getElementById('authView'),
-    appView: document.getElementById('appView'),
-    loginForm: document.getElementById('loginForm'),
-    loginUsername: document.getElementById('loginUsername'),
-    loginPassword: document.getElementById('loginPassword'),
-    loginError: document.getElementById('loginError'),
-    registerForm: document.getElementById('registerForm'),
-    registerUsername: document.getElementById('registerUsername'),
-    registerPassword: document.getElementById('registerPassword'),
-    registerConfirm: document.getElementById('registerConfirm'),
-    registerError: document.getElementById('registerError'),
-    userAvatar: document.getElementById('userAvatar'),
-    userName: document.getElementById('userName'),
-    adminLink: document.getElementById('adminLink'),
-    logoutBtn: document.getElementById('logoutBtn'),
     searchInput: document.getElementById('searchInput'),
     clearSearch: document.getElementById('clearSearch'),
     quickSearches: document.getElementById('quickSearches'),
@@ -111,164 +92,6 @@
     localStorage.setItem(STORAGE_KEYS.theme, theme);
     els.themeBtn.innerHTML = icon(theme === 'dark' ? 'sun' : 'moon');
     refreshIcons();
-  }
-
-  async function apiRequest(url, options) {
-    const response = await fetch(url, Object.assign({
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json' }
-    }, options || {}));
-    let data = {};
-    try {
-      data = await response.json();
-    } catch (error) {
-      data = {};
-    }
-    if (!response.ok) {
-      throw new Error(data.error || '请求失败');
-    }
-    return data;
-  }
-
-  async function detectServerMode() {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(function () { controller.abort(); }, 1800);
-      const response = await fetch('/api/health', {
-        credentials: 'same-origin',
-        signal: controller.signal
-      });
-      clearTimeout(timer);
-      return response.ok;
-    } catch (error) {
-      return false;
-    }
-  }
-
-  function loadUsers() {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEYS.users) || '[]');
-    } catch (error) {
-      return [];
-    }
-  }
-
-  function saveUsers(users) {
-    localStorage.setItem(STORAGE_KEYS.users, JSON.stringify(users));
-  }
-
-  function loadSession() {
-    return localStorage.getItem(STORAGE_KEYS.session);
-  }
-
-  function saveSession(username) {
-    localStorage.setItem(STORAGE_KEYS.session, username);
-  }
-
-  function clearSession() {
-    localStorage.removeItem(STORAGE_KEYS.session);
-  }
-
-  async function hashPassword(salt, password) {
-    const text = salt + ':' + password;
-    if (window.crypto && window.crypto.subtle && typeof window.crypto.subtle.digest === 'function') {
-      const data = new TextEncoder().encode(text);
-      const digest = await window.crypto.subtle.digest('SHA-256', data);
-      return Array.from(new Uint8Array(digest))
-        .map(function (byte) { return byte.toString(16).padStart(2, '0'); })
-        .join('');
-    }
-    let hash = 5381;
-    for (let i = 0; i < text.length; i += 1) {
-      hash = ((hash << 5) + hash) ^ text.charCodeAt(i);
-      hash >>>= 0;
-    }
-    return 'fallback-' + hash.toString(16);
-  }
-
-  function randomSalt() {
-    return Math.random().toString(36).slice(2) + Date.now().toString(36);
-  }
-
-  function findUser(username) {
-    const key = username.trim().toLowerCase();
-    return loadUsers().find(function (user) {
-      return user.username.toLowerCase() === key;
-    });
-  }
-
-  function isValidUsername(username) {
-    return /^[A-Za-z][A-Za-z0-9_]{3,19}$/.test(username);
-  }
-
-  function passwordTypeCount(password) {
-    let count = 0;
-    if (/[a-z]/.test(password)) {
-      count += 1;
-    }
-    if (/[A-Z]/.test(password)) {
-      count += 1;
-    }
-    if (/[0-9]/.test(password)) {
-      count += 1;
-    }
-    if (/[^A-Za-z0-9]/.test(password)) {
-      count += 1;
-    }
-    return count;
-  }
-
-  function passwordError(password) {
-    if (/\s/.test(password)) {
-      return '密码不能包含空格';
-    }
-    if (password.length < 8 || password.length > 32) {
-      return '密码长度需为 8-32 位';
-    }
-    if (passwordTypeCount(password) < 2) {
-      return '密码需包含字母、数字、特殊符号中的至少两种';
-    }
-    return '';
-  }
-
-  function showAuthError(target, message) {
-    target.textContent = message;
-    target.hidden = false;
-  }
-
-  function hideAuthErrors() {
-    els.loginError.hidden = true;
-    els.registerError.hidden = true;
-  }
-
-  function switchAuthTab(tab) {
-    document.querySelectorAll('.auth-tab').forEach(function (btn) {
-      const active = btn.dataset.authTab === tab;
-      btn.classList.toggle('active', active);
-      btn.setAttribute('aria-selected', active ? 'true' : 'false');
-    });
-    els.loginForm.hidden = tab !== 'login';
-    els.registerForm.hidden = tab !== 'register';
-    hideAuthErrors();
-  }
-
-  function enterApp(username, role) {
-    currentRole = role || 'user';
-    els.userAvatar.textContent = username.trim().charAt(0).toUpperCase();
-    els.userName.textContent = username;
-    els.adminLink.hidden = !(serverMode && currentRole === 'admin');
-    els.authView.hidden = true;
-    els.appView.hidden = false;
-    els.backToTop.hidden = true;
-    window.scrollTo(0, 0);
-    render();
-  }
-
-  function showAuth() {
-    els.appView.hidden = true;
-    els.authView.hidden = false;
-    els.backToTop.hidden = true;
-    window.scrollTo(0, 0);
   }
 
   function categoryOf(tool) {
@@ -657,113 +480,6 @@
     document.body.style.overflow = '';
   }
 
-  document.querySelectorAll('.auth-tab').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      switchAuthTab(btn.dataset.authTab);
-    });
-  });
-
-  els.loginForm.addEventListener('submit', async function (event) {
-    event.preventDefault();
-    const username = els.loginUsername.value.trim();
-    const password = els.loginPassword.value;
-    hideAuthErrors();
-    if (!username || !password) {
-      showAuthError(els.loginError, '请输入账号和密码');
-      return;
-    }
-    if (serverMode) {
-      try {
-        const data = await apiRequest('/api/login', {
-          method: 'POST',
-          body: JSON.stringify({ username: username, password: password })
-        });
-        enterApp(data.username, data.role);
-      } catch (error) {
-        showAuthError(els.loginError, error.message);
-      }
-      return;
-    }
-    const user = findUser(username);
-    if (!user) {
-      showAuthError(els.loginError, '账号或密码不正确');
-      return;
-    }
-    const hash = await hashPassword(user.salt, password);
-    if (hash !== user.passHash) {
-      showAuthError(els.loginError, '账号或密码不正确');
-      return;
-    }
-    saveSession(user.username);
-    enterApp(user.username);
-  });
-
-  els.registerForm.addEventListener('submit', async function (event) {
-    event.preventDefault();
-    const username = els.registerUsername.value.trim();
-    const password = els.registerPassword.value;
-    const confirm = els.registerConfirm.value;
-    hideAuthErrors();
-    if (!isValidUsername(username)) {
-      showAuthError(els.registerError, '账号需以英文开头，由 4-20 位英文、数字或下划线组成');
-      return;
-    }
-    const passwordIssue = passwordError(password);
-    if (passwordIssue) {
-      showAuthError(els.registerError, passwordIssue);
-      return;
-    }
-    if (password !== confirm) {
-      showAuthError(els.registerError, '两次输入的密码不一致');
-      return;
-    }
-    if (serverMode) {
-      try {
-        const data = await apiRequest('/api/register', {
-          method: 'POST',
-          body: JSON.stringify({ username: username, password: password })
-        });
-        enterApp(data.username, data.role);
-      } catch (error) {
-        showAuthError(els.registerError, error.message);
-      }
-      return;
-    }
-    if (findUser(username)) {
-      showAuthError(els.registerError, '该账号已存在，请直接登录');
-      return;
-    }
-    const salt = randomSalt();
-    const passHash = await hashPassword(salt, password);
-    const users = loadUsers();
-    users.push({
-      username: username,
-      salt: salt,
-      passHash: passHash,
-      createdAt: new Date().toISOString()
-    });
-    saveUsers(users);
-    saveSession(username);
-    enterApp(username);
-  });
-
-  els.logoutBtn.addEventListener('click', async function () {
-    if (serverMode) {
-      try {
-        await apiRequest('/api/logout', { method: 'POST' });
-      } catch (error) {
-        // 即使退出接口失败，也回到登录页
-      }
-    }
-    clearSession();
-    els.loginPassword.value = '';
-    els.registerUsername.value = '';
-    els.registerPassword.value = '';
-    els.registerConfirm.value = '';
-    switchAuthTab('login');
-    showAuth();
-  });
-
   els.searchInput.addEventListener('input', function () {
     state.query = els.searchInput.value;
     els.clearSearch.hidden = !state.query;
@@ -933,22 +649,4 @@
 
   applyTheme(state.theme);
   render();
-  (async function init() {
-    serverMode = await detectServerMode();
-    if (serverMode) {
-      try {
-        const session = await apiRequest('/api/session');
-        enterApp(session.username, session.role);
-      } catch (error) {
-        showAuth();
-      }
-    } else {
-      const sessionUser = loadSession();
-      if (sessionUser && findUser(sessionUser)) {
-        enterApp(sessionUser);
-      } else {
-        showAuth();
-      }
-    }
-  })();
 })();
