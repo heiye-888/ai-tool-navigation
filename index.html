@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI 工具导航</title>
+  <meta name="description" content="一站发现、筛选和收藏好用的 AI 工具，覆盖对话、图像、视频、编程、办公、搜索、设计与 Agent。">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <section class="auth-view" id="authView" aria-label="登录">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <span class="brand-mark auth-brand-mark"><i data-lucide="sparkles"></i></span>
+        <span class="auth-title">AI 工具导航</span>
+      </div>
+      <p class="auth-subtitle">登录后开始使用工具导航</p>
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab active" type="button" data-auth-tab="login" role="tab" aria-selected="true">登录</button>
+        <button class="auth-tab" type="button" data-auth-tab="register" role="tab" aria-selected="false">注册</button>
+      </div>
+      <form id="loginForm" class="auth-form" novalidate>
+        <label class="auth-field">
+          <span>账号</span>
+          <span class="auth-input-wrap"><i data-lucide="user"></i><input id="loginUsername" type="text" autocomplete="username" placeholder="请输入用户名"></span>
+        </label>
+        <label class="auth-field">
+          <span>密码</span>
+          <span class="auth-input-wrap"><i data-lucide="lock"></i><input id="loginPassword" type="password" autocomplete="current-password" placeholder="请输入密码"></span>
+        </label>
+        <p class="auth-error" id="loginError" hidden></p>
+        <button class="auth-submit" type="submit">登录</button>
+      </form>
+      <form id="registerForm" class="auth-form" novalidate hidden>
+        <label class="auth-field">
+          <span>账号</span>
+          <span class="auth-input-wrap"><i data-lucide="user"></i><input id="registerUsername" type="text" autocomplete="username" placeholder="设置用户名"></span>
+        </label>
+        <label class="auth-field">
+          <span>密码</span>
+          <span class="auth-input-wrap"><i data-lucide="lock"></i><input id="registerPassword" type="password" autocomplete="new-password" placeholder="至少 6 位"></span>
+        </label>
+        <label class="auth-field">
+          <span>确认密码</span>
+          <span class="auth-input-wrap"><i data-lucide="shield-check"></i><input id="registerConfirm" type="password" autocomplete="new-password" placeholder="再次输入密码"></span>
+        </label>
+        <p class="auth-error" id="registerError" hidden></p>
+        <button class="auth-submit" type="submit">注册并登录</button>
+      </form>
+    </div>
+  </section>
+
+  <div id="appView" hidden>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="AI 工具导航首页">
+        <span class="brand-mark"><i data-lucide="sparkles"></i></span>
+        <span class="brand-text">AI 工具导航</span>
+      </a>
+      <div class="topbar-actions">
+        <span class="user-chip" id="userChip">
+          <span class="user-avatar" id="userAvatar">A</span>
+          <span class="user-name" id="userName">用户</span>
+        </span>
+        <button id="logoutBtn" class="icon-btn" type="button" aria-label="退出登录" title="退出登录">
+          <i data-lucide="log-out"></i>
+        </button>
+        <button id="favoriteBtn" class="icon-btn" type="button" aria-label="查看我的收藏" title="我的收藏">
+          <i data-lucide="heart"></i>
+          <span class="count-badge" id="favCount" hidden>0</span>
+        </button>
+        <button id="themeBtn" class="icon-btn" type="button" aria-label="切换深浅色模式" title="切换主题">
+          <i data-lucide="moon"></i>
+        </button>
+      </div>
+    </header>
+
+    <main>
+    <section class="hero" aria-label="站点头部">
+      <div class="hero-copy">
+        <p class="eyebrow">持续更新的 AI 工具箱</p>
+        <h1>发现好用的 AI 工具</h1>
+        <p class="hero-sub">按场景搜索、筛选和收藏，找到最适合你的 AI 工具。</p>
+      </div>
+      <div class="hero-search">
+        <div class="search-box">
+          <i data-lucide="search" class="search-icon"></i>
+          <input id="searchInput" type="search" placeholder="搜索工具、功能或标签，如「视频」「开源」" autocomplete="off">
+          <button id="clearSearch" class="clear-btn" type="button" aria-label="清空搜索" title="清空" hidden>
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <div class="quick-searches" id="quickSearches" aria-label="热门搜索">
+          <span class="quick-label">热门搜索</span>
+          <button type="button" data-query="视频">视频</button>
+          <button type="button" data-query="开源">开源</button>
+          <button type="button" data-query="写作">写作</button>
+          <button type="button" data-query="国产">国产</button>
+          <button type="button" data-query="数字人">数字人</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-band" aria-label="站点数据">
+      <div class="stats-inner">
+        <div class="stat-item">
+          <strong id="statTools">0</strong>
+          <span>收录工具</span>
+        </div>
+        <div class="stat-item">
+          <strong id="statCats">0</strong>
+          <span>工具分类</span>
+        </div>
+        <div class="stat-item">
+          <strong id="statHot">0</strong>
+          <span>本周热门</span>
+        </div>
+        <div class="stat-item">
+          <strong id="statCn">0</strong>
+          <span>国产工具</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="controls" aria-label="筛选与排序">
+      <div class="chip-row" id="categoryChips"></div>
+      <div class="utility-row">
+        <div class="filter-group" id="filterGroup">
+          <button class="filter-pill active" type="button" data-filter="all">全部</button>
+          <button class="filter-pill" type="button" data-filter="free">免费可用</button>
+          <button class="filter-pill" type="button" data-filter="open">开源</button>
+          <button class="filter-pill" type="button" data-filter="cn">国产</button>
+          <button class="filter-pill" type="button" data-filter="oversea">海外</button>
+          <button class="filter-pill" type="button" data-filter="favorites">我的收藏</button>
+        </div>
+        <div class="sort-group">
+          <span class="sort-label">排序</span>
+          <span class="select-wrap">
+            <select id="sortSelect" aria-label="排序方式">
+              <option value="recommend">综合推荐</option>
+              <option value="rating">评分最高</option>
+              <option value="traffic">热度最高</option>
+              <option value="newest">最新收录</option>
+            </select>
+            <i data-lucide="chevron-down"></i>
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <section class="hot-section" id="hotSection" aria-label="热门推荐">
+      <div class="section-head">
+        <h2>本周热门</h2>
+        <div class="section-head-right">
+          <span class="section-hint">推荐关注</span>
+          <div class="carousel-controls">
+            <button class="carousel-btn" id="hotPrev" type="button" aria-label="上一组热门" title="上一组">
+              <i data-lucide="chevron-left"></i>
+            </button>
+            <button class="carousel-btn" id="hotNext" type="button" aria-label="下一组热门" title="下一组">
+              <i data-lucide="chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="hot-track" id="hotTrack"></div>
+    </section>
+
+    <section class="catalog-section" aria-label="全部工具">
+      <div class="section-head">
+        <h2 id="catalogTitle">全部工具</h2>
+        <span class="section-hint" id="resultCount"></span>
+      </div>
+      <div class="tool-grid" id="toolGrid"></div>
+      <div class="empty-state" id="emptyState" hidden>
+        <span class="empty-icon"><i data-lucide="search-x"></i></span>
+        <h3>没有找到匹配的工具</h3>
+        <p>试试更换关键词，或切换到其他分类。</p>
+        <button class="text-btn" id="resetBtn" type="button">重置筛选</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>AI 工具导航 · 已收录 <strong id="footerCount">0</strong> 款工具</span>
+    <span class="footer-note">收录信息仅供导航参考</span>
+  </footer>
+
+  <div class="modal-backdrop" id="modalBackdrop" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalName">
+      <button class="modal-close icon-btn" id="modalClose" type="button" aria-label="关闭详情" title="关闭">
+        <i data-lucide="x"></i>
+      </button>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <button class="back-to-top" id="backToTop" type="button" aria-label="回到顶部" title="回到顶部" hidden>
+    <i data-lucide="arrow-up"></i>
+  </button>
+  </div>
+
+  <script src="lucide.min.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
