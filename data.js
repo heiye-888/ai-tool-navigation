@@ -3510,5 +3510,14 @@ const TOOLS = [
     price: '免费额度',
     features: ['PDF/网页转测验', '智能抽认卡', 'AI 播客与笔记'],
     hot: false
-  }
+  },
+  {
+    id: 'disconfirmai',
+    name: 'DisconfirmAI',
+    category: 'research',
+    tags: ['投研', '免费额度', '中文'],
+    desc: 'AI 投研工作台。阅读标注【背景】【存疑】【编按】；研究回答拆成已核验、推断、存疑；价值陷阱检查是一份约一万字的研究框架，不给买卖结论。',
+    url: 'https://disconfirmai.com/zh',
+    pricing: 'freemium'
+  },
 ];
